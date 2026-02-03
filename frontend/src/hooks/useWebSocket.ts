@@ -10,8 +10,14 @@ export function useWebSocket() {
     const token = localStorage.getItem('access_token')
     if (!token) return
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws?token=${token}`)
+    let wsUrl: string
+    if (import.meta.env.VITE_WS_URL) {
+      wsUrl = `${import.meta.env.VITE_WS_URL}/ws?token=${token}`
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      wsUrl = `${protocol}//${window.location.host}/ws?token=${token}`
+    }
+    const ws = new WebSocket(wsUrl)
 
     ws.onopen = () => setConnected(true)
     ws.onclose = () => {
