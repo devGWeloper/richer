@@ -10,6 +10,15 @@ class TradingStartRequest(BaseModel):
     stock_code: str
     stock_name: Optional[str] = None
     interval_seconds: int = 60
+    quantity: int = 1
+
+
+class AccountInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    label: str
+    account_no_masked: str
 
 
 class SessionResponse(BaseModel):
@@ -28,6 +37,8 @@ class SessionResponse(BaseModel):
     started_at: Optional[datetime] = None
     stopped_at: Optional[datetime] = None
     created_at: datetime
+    quantity: int = 1
+    account: Optional[AccountInfo] = None
 
 
 class TradeResponse(BaseModel):
@@ -48,3 +59,12 @@ class TradeResponse(BaseModel):
     kis_order_no: Optional[str] = None
     signal_reason: Optional[str] = None
     created_at: datetime
+
+
+class BuyableQuantityResponse(BaseModel):
+    stock_code: str
+    stock_name: str
+    current_price: int
+    available_cash: int
+    max_buyable_quantity: int
+    message: Optional[str] = None

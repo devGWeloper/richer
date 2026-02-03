@@ -1,4 +1,5 @@
-import { Wallet, TrendingUp, Activity, BarChart3 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Wallet, TrendingUp, Activity, BarChart3, Briefcase, Clock } from 'lucide-react'
 import { useDashboardSummary, useHoldings, useRecentTrades } from '@/hooks/useDashboard'
 import { useWebSocket } from '@/hooks/useWebSocket'
 import { formatNumber, formatPercent } from '@/lib/utils'
@@ -53,7 +54,16 @@ export default function DashboardPage() {
           {holdingsLoading ? (
             <LoadingSpinner />
           ) : !holdingsData?.holdings?.length ? (
-            <p className="text-sm text-gray-500">보유종목이 없습니다</p>
+            <div className="flex flex-col items-center py-8 text-center">
+              <Briefcase className="h-12 w-12 text-gray-300" />
+              <p className="mt-3 text-sm text-gray-500">아직 보유 중인 종목이 없습니다</p>
+              <Link
+                to="/trading"
+                className="mt-3 text-sm font-medium text-primary hover:underline"
+              >
+                자동매매 시작하기
+              </Link>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -97,7 +107,13 @@ export default function DashboardPage() {
           {tradesLoading ? (
             <LoadingSpinner />
           ) : !recentTrades?.length ? (
-            <p className="text-sm text-gray-500">거래 이력이 없습니다</p>
+            <div className="flex flex-col items-center py-8 text-center">
+              <Clock className="h-12 w-12 text-gray-300" />
+              <p className="mt-3 text-sm text-gray-500">아직 거래 내역이 없습니다</p>
+              <p className="mt-1 text-xs text-gray-400">
+                자동매매가 실행되면 거래 내역이 여기에 표시됩니다
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {recentTrades.slice(0, 10).map((t) => (

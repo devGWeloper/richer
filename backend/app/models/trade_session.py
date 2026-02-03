@@ -29,6 +29,7 @@ class TradeSession(Base):
     )
     stock_code: Mapped[str] = mapped_column(String(20), nullable=False)
     stock_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)
     status: Mapped[str] = mapped_column(String(20), default="pending")
     config: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, default=dict)
     total_pnl: Mapped[float] = mapped_column(Float, default=0.0)

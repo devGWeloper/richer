@@ -32,6 +32,7 @@ env/
 credentials.json
 secrets.json
 service-account*.json
+token.dat
 
 # Logs
 logs/

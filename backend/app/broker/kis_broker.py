@@ -33,10 +33,11 @@ class KISBroker(BrokerAdapter):
         import mojito
 
         mock = self.environment == "vps"
+        acc_no_full = f"{self.account_no}-{self.account_suffix}"
         broker = mojito.KoreaInvestment(
             api_key=self.app_key,
             api_secret=self.app_secret,
-            acc_no=self.account_no,
+            acc_no=acc_no_full,
             exchange="서울",
             mock=mock,
         )
@@ -55,13 +56,26 @@ class KISBroker(BrokerAdapter):
             raise BrokerConnectionError(f"Failed to connect: {e}") from e
 
     async def get_balance(self) -> dict[str, Any]:
+        """계좌 잔고 요약 정보를 반환합니다."""
         try:
             await self._rate_limiter.acquire()
             result = await asyncio.to_thread(self._broker.fetch_balance)
-            if hasattr(result, "to_dict"):
-                return result.to_dict(orient="list")
-            return dict(result) if result else {}
+
+            # fetch_balance 반환값이 직접 dict로 옴
+            if result and isinstance(result, dict):
+                output2 = result.get("output2", [])
+                if output2 and isinstance(output2, list) and len(output2) > 0:
+                    summary = output2[0]
+                    return {
+                        "tot_evlu_amt": summary.get("tot_evlu_amt", "0"),
+                        "evlu_pfls_smtl_amt": summary.get("evlu_pfls_smtl_amt", "0"),
+                        "pchs_amt_smtl_amt": summary.get("pchs_amt_smtl_amt", "0"),
+                        "dnca_tot_amt": summary.get("dnca_tot_amt", "0"),
+                        "nxdy_excc_amt": summary.get("nxdy_excc_amt", "0"),
+                    }
+            return {}
         except Exception as e:
+            logger.error(f"get_balance error: {e}")
             raise BrokerConnectionError(f"Failed to fetch balance: {e}") from e
 
     async def get_holdings(self) -> list[dict[str, Any]]:

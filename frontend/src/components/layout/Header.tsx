@@ -8,14 +8,27 @@ export default function Header() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6">
-      <div className="flex items-center gap-2">
+      <div
+        className={`flex items-center gap-2 rounded-full px-3 py-1 ${
+          connected ? 'bg-green-50' : 'bg-gray-100'
+        }`}
+      >
+        <span
+          className={`h-2 w-2 rounded-full ${
+            connected ? 'animate-pulse bg-green-500' : 'bg-gray-400'
+          }`}
+        />
         {connected ? (
-          <Wifi className="h-4 w-4 text-green-500" />
+          <Wifi className="h-4 w-4 text-green-600" />
         ) : (
           <WifiOff className="h-4 w-4 text-gray-400" />
         )}
-        <span className="text-xs text-gray-500">
-          {connected ? '실시간 연결됨' : '연결 끊김'}
+        <span
+          className={`text-xs font-medium ${
+            connected ? 'text-green-700' : 'text-gray-500'
+          }`}
+        >
+          {connected ? '실시간' : '연결 끊김'}
         </span>
       </div>
       <div className="flex items-center gap-4">

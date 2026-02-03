@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -38,14 +39,13 @@ async def get_summary(
             broker = KISBroker(**creds)
             await broker.connect()
             balance = await broker.get_balance()
-            # Try to extract summary from balance data
-            if isinstance(balance, dict):
+            if isinstance(balance, dict) and balance:
                 total_balance = float(balance.get("tot_evlu_amt", 0) or 0)
                 total_profit = float(balance.get("evlu_pfls_smtl_amt", 0) or 0)
                 if total_balance > 0:
                     profit_rate = (total_profit / total_balance) * 100
-        except Exception:
-            pass
+        except Exception as e:
+            logger.bind(category="dashboard").error(f"Failed to fetch balance: {e}")
 
     active_sessions = await get_active_session_count(db, current_user.id)
     trades_today = await get_today_trade_count(db, current_user.id)
@@ -73,7 +73,8 @@ async def get_holdings(
         broker = KISBroker(**creds)
         await broker.connect()
         holdings_raw = await broker.get_holdings()
-    except Exception:
+    except Exception as e:
+        logger.bind(category="dashboard").error(f"Failed to fetch holdings: {e}")
         return HoldingsResponse(holdings=[], total_evaluation=0)
 
     holdings = []

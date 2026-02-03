@@ -1,5 +1,5 @@
 import client from './client'
-import type { TradeSession } from '@/lib/types'
+import type { TradeSession, BuyableQuantity } from '@/lib/types'
 
 export const tradingApi = {
   start: (data: {
@@ -8,6 +8,7 @@ export const tradingApi = {
     stock_code: string
     stock_name?: string
     interval_seconds?: number
+    quantity?: number
   }) => client.post<TradeSession>('/trading/start', data),
 
   stop: (sessionId: number) => client.post<TradeSession>(`/trading/stop/${sessionId}`),
@@ -19,4 +20,7 @@ export const tradingApi = {
   sessions: () => client.get<TradeSession[]>('/trading/sessions'),
 
   active: () => client.get<TradeSession[]>('/trading/active'),
+
+  buyable: (accountId: number, stockCode: string) =>
+    client.get<BuyableQuantity>(`/trading/buyable/${accountId}/${stockCode}`),
 }

@@ -4,6 +4,7 @@ import { Plus, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { accountsApi } from '@/api/accounts'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { toast } from '@/stores/toastStore'
 import { formatDateTime } from '@/lib/utils'
 
 export default function SettingsPage() {
@@ -29,6 +30,37 @@ export default function SettingsPage() {
     message: string
   } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+    if (!form.label.trim()) {
+      errors.label = '계좌 별명을 입력해주세요'
+    }
+    if (!form.app_key.trim()) {
+      errors.app_key = 'App Key를 입력해주세요'
+    } else if (form.app_key.length < 20) {
+      errors.app_key = 'App Key가 너무 짧습니다'
+    }
+    if (!form.app_secret.trim()) {
+      errors.app_secret = 'App Secret을 입력해주세요'
+    } else if (form.app_secret.length < 20) {
+      errors.app_secret = 'App Secret이 너무 짧습니다'
+    }
+    if (!form.account_no.trim()) {
+      errors.account_no = '계좌번호를 입력해주세요'
+    } else if (!/^\d{8}$/.test(form.account_no.replace('-', ''))) {
+      errors.account_no = '계좌번호 형식이 올바르지 않습니다 (8자리 숫자)'
+    }
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSubmit = () => {
+    if (validateForm()) {
+      createMutation.mutate()
+    }
+  }
 
   const createMutation = useMutation({
     mutationFn: () => accountsApi.create(form),
@@ -44,6 +76,11 @@ export default function SettingsPage() {
         environment: 'vps',
         hts_id: '',
       })
+      setFormErrors({})
+      toast.success('계좌가 등록되었습니다')
+    },
+    onError: () => {
+      toast.error('계좌 등록에 실패했습니다. 입력 정보를 확인해주세요.')
     },
   })
 
@@ -51,6 +88,7 @@ export default function SettingsPage() {
     mutationFn: (id: number) => accountsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      toast.success('계좌가 삭제되었습니다')
     },
   })
 
@@ -58,6 +96,10 @@ export default function SettingsPage() {
     mutationFn: (id: number) => accountsApi.verify(id),
     onSuccess: (res, id) => {
       setVerifyResult({ id, ...res.data })
+    },
+    onError: (error: any, id) => {
+      const message = error?.response?.data?.detail || error?.message || '연결 실패'
+      setVerifyResult({ id, success: false, message })
     },
   })
 
@@ -81,15 +123,23 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                계좌 별명
+                계좌 별명 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={form.label}
-                onChange={(e) => setForm({ ...form, label: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                onChange={(e) => {
+                  setForm({ ...form, label: e.target.value })
+                  if (formErrors.label) setFormErrors({ ...formErrors, label: '' })
+                }}
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm ${
+                  formErrors.label ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
                 placeholder="예: 내 모의투자 계좌"
               />
+              {formErrors.label && (
+                <p className="mt-1 text-xs text-red-500">{formErrors.label}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">환경</label>
@@ -103,34 +153,64 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">App Key</label>
+              <label className="block text-sm font-medium text-gray-700">
+                App Key <span className="text-red-500">*</span>
+              </label>
               <input
                 type="password"
                 value={form.app_key}
-                onChange={(e) => setForm({ ...form, app_key: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                onChange={(e) => {
+                  setForm({ ...form, app_key: e.target.value })
+                  if (formErrors.app_key) setFormErrors({ ...formErrors, app_key: '' })
+                }}
+                autoComplete="off"
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm ${
+                  formErrors.app_key ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
               />
+              {formErrors.app_key && (
+                <p className="mt-1 text-xs text-red-500">{formErrors.app_key}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                App Secret
+                App Secret <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
                 value={form.app_secret}
-                onChange={(e) => setForm({ ...form, app_secret: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                onChange={(e) => {
+                  setForm({ ...form, app_secret: e.target.value })
+                  if (formErrors.app_secret) setFormErrors({ ...formErrors, app_secret: '' })
+                }}
+                autoComplete="off"
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm ${
+                  formErrors.app_secret ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
               />
+              {formErrors.app_secret && (
+                <p className="mt-1 text-xs text-red-500">{formErrors.app_secret}</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">계좌번호</label>
+              <label className="block text-sm font-medium text-gray-700">
+                계좌번호 <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={form.account_no}
-                onChange={(e) => setForm({ ...form, account_no: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                placeholder="50012345-01"
+                onChange={(e) => {
+                  setForm({ ...form, account_no: e.target.value })
+                  if (formErrors.account_no) setFormErrors({ ...formErrors, account_no: '' })
+                }}
+                className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm ${
+                  formErrors.account_no ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="50012345"
               />
+              {formErrors.account_no && (
+                <p className="mt-1 text-xs text-red-500">{formErrors.account_no}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -157,13 +237,11 @@ export default function SettingsPage() {
           </div>
           <div className="mt-4 flex gap-2">
             <button
-              onClick={() => createMutation.mutate()}
-              disabled={
-                !form.label || !form.app_key || !form.app_secret || !form.account_no
-              }
+              onClick={handleSubmit}
+              disabled={createMutation.isPending}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
             >
-              등록
+              {createMutation.isPending ? '등록 중...' : '등록'}
             </button>
             <button
               onClick={() => setShowAdd(false)}

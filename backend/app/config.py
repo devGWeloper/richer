@@ -7,6 +7,7 @@ import json
 class Settings(BaseSettings):
     APP_NAME: str = "Richer"
     DEBUG: bool = True
+    SQL_ECHO: bool = False  # SQL 쿼리 로깅 (True면 모든 쿼리 출력)
     SECRET_KEY: str = "change-me-to-a-random-secret-key-at-least-32-chars"
     FERNET_KEY: str = ""
 

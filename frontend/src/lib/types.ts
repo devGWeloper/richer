@@ -37,6 +37,12 @@ export interface StrategyTypeInfo {
   parameter_schema: Record<string, any>
 }
 
+export interface AccountInfo {
+  id: number
+  label: string
+  account_no_masked: string
+}
+
 export interface TradeSession {
   id: number
   user_id: number
@@ -48,9 +54,11 @@ export interface TradeSession {
   config: Record<string, any> | null
   total_pnl: number
   total_trades: number
+  quantity: number
   started_at: string | null
   stopped_at: string | null
   created_at: string
+  account: AccountInfo | null
 }
 
 export interface Trade {
@@ -123,6 +131,26 @@ export interface WSMessage {
   payload: Record<string, any>
 }
 
+export interface SessionStatusUpdate {
+  session_id: number
+  stock_code: string
+  stock_name: string
+  status: string
+  message: string
+  timestamp: string
+  current_price?: number
+  signal?: string
+  signal_reason?: string
+  last_checked_at?: string
+  next_check_at?: string
+  market_status?: {
+    is_open: boolean
+    reason: string
+    next_open: string | null
+    current_time: string
+  }
+}
+
 export interface TradeLog {
   id: number
   session_id: number | null
@@ -131,4 +159,13 @@ export interface TradeLog {
   message: string
   metadata: Record<string, any> | null
   created_at: string
+}
+
+export interface BuyableQuantity {
+  stock_code: string
+  stock_name: string
+  current_price: number
+  available_cash: number
+  max_buyable_quantity: number
+  message: string | null
 }
