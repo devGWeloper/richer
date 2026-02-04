@@ -24,7 +24,13 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> List[str]:
-        return json.loads(self.CORS_ORIGINS)
+        if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == "":
+            return ["http://localhost:5173", "http://localhost:3000"]
+        try:
+            return json.loads(self.CORS_ORIGINS)
+        except json.JSONDecodeError:
+            # 단일 URL이 들어온 경우 처리
+            return [self.CORS_ORIGINS.strip()]
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
