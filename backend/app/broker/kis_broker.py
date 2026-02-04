@@ -28,6 +28,7 @@ class KISBroker(BrokerAdapter):
         self.hts_id = hts_id
         self._broker = None
         self._rate_limiter = TokenBucketRateLimiter(max_tokens=15, refill_rate=15.0)
+        self._cached_balance: dict[str, Any] | None = None
 
     def _create_broker(self):
         import mojito
@@ -43,12 +44,33 @@ class KISBroker(BrokerAdapter):
         )
         return broker
 
+    def _parse_balance_result(self, result: Any) -> dict[str, Any]:
+        """fetch_balance 결과를 파싱하여 잔고 정보 반환"""
+        if result and isinstance(result, dict):
+            output2 = result.get("output2", [])
+            if output2 and isinstance(output2, list) and len(output2) > 0:
+                summary = output2[0]
+                return {
+                    "tot_evlu_amt": summary.get("tot_evlu_amt", "0"),
+                    "evlu_pfls_smtl_amt": summary.get("evlu_pfls_smtl_amt", "0"),
+                    "pchs_amt_smtl_amt": summary.get("pchs_amt_smtl_amt", "0"),
+                    "dnca_tot_amt": summary.get("dnca_tot_amt", "0"),
+                    "nxdy_excc_amt": summary.get("nxdy_excc_amt", "0"),
+                }
+        return {}
+
     async def connect(self) -> bool:
         try:
             self._broker = await asyncio.to_thread(self._create_broker)
-            # Test connection by fetching balance
+            # Test connection by fetching balance and cache the result
             await self._rate_limiter.acquire()
-            await asyncio.to_thread(self._broker.fetch_balance)
+            result = await asyncio.to_thread(self._broker.fetch_balance)
+
+            # Cache balance result for later use
+            balance = self._parse_balance_result(result)
+            if balance:
+                self._cached_balance = balance
+
             logger.bind(category="system").info("KIS broker connected successfully")
             return True
         except Exception as e:
@@ -61,21 +83,16 @@ class KISBroker(BrokerAdapter):
             await self._rate_limiter.acquire()
             result = await asyncio.to_thread(self._broker.fetch_balance)
 
-            # fetch_balance 반환값이 직접 dict로 옴
-            if result and isinstance(result, dict):
-                output2 = result.get("output2", [])
-                if output2 and isinstance(output2, list) and len(output2) > 0:
-                    summary = output2[0]
-                    return {
-                        "tot_evlu_amt": summary.get("tot_evlu_amt", "0"),
-                        "evlu_pfls_smtl_amt": summary.get("evlu_pfls_smtl_amt", "0"),
-                        "pchs_amt_smtl_amt": summary.get("pchs_amt_smtl_amt", "0"),
-                        "dnca_tot_amt": summary.get("dnca_tot_amt", "0"),
-                        "nxdy_excc_amt": summary.get("nxdy_excc_amt", "0"),
-                    }
+            balance = self._parse_balance_result(result)
+            if balance:
+                self._cached_balance = balance
+                return balance
             return {}
         except Exception as e:
-            logger.error(f"get_balance error: {e}")
+            # API 호출 실패 시 캐시된 값 반환 (connect 시 저장된 값)
+            logger.warning(f"get_balance error: {e}, using cached balance")
+            if self._cached_balance:
+                return self._cached_balance
             raise BrokerConnectionError(f"Failed to fetch balance: {e}") from e
 
     async def get_holdings(self) -> list[dict[str, Any]]:

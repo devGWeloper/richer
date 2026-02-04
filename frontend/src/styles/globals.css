@@ -6,7 +6,109 @@
   * {
     @apply border-border;
   }
+
+  html {
+    /* iOS smooth scrolling */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+  }
+
+  /* iOS safe area support */
+  :root {
+    --sat: env(safe-area-inset-top);
+    --sar: env(safe-area-inset-right);
+    --sab: env(safe-area-inset-bottom);
+    --sal: env(safe-area-inset-left);
+  }
+}
+
+@layer utilities {
+  /* Safe area utilities for iOS notch/home indicator */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Touch-friendly tap targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* iOS-style momentum scrolling */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Active state for touch */
+  .touch-active:active {
+    @apply scale-[0.98] opacity-80;
+  }
+}
+
+@layer components {
+  /* Mobile-optimized card */
+  .card-mobile {
+    @apply rounded-2xl bg-white p-4 shadow-sm;
+  }
+
+  /* Mobile button with touch feedback */
+  .btn-mobile {
+    @apply flex items-center justify-center rounded-xl px-4 py-3 font-medium transition-all;
+    @apply active:scale-[0.98] active:opacity-90;
+  }
+
+  .btn-mobile-primary {
+    @apply btn-mobile bg-primary text-white;
+  }
+
+  .btn-mobile-secondary {
+    @apply btn-mobile bg-gray-100 text-gray-700;
+  }
+
+  /* Mobile input styling */
+  .input-mobile {
+    @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base;
+    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+    @apply placeholder:text-gray-400;
+    /* Prevent iOS zoom on focus */
+    font-size: 16px;
+  }
+
+  /* Mobile stat card */
+  .stat-card-mobile {
+    @apply rounded-2xl bg-white p-4;
+  }
+
+  /* Mobile list item */
+  .list-item-mobile {
+    @apply flex items-center gap-3 rounded-xl px-3 py-3;
+    @apply active:bg-gray-50;
   }
 }

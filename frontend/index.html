@@ -3,8 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Mobile viewport with safe area support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- iOS PWA settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Richer" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Theme color for browser chrome -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)" />
+
+    <!-- Prevent phone number detection -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Touch icon for iOS -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <title>Richer - 주식 자동매매</title>
+
+    <style>
+      /* Prevent FOUC */
+      html { background-color: #f9fafb; }
+    </style>
   </head>
   <body class="min-h-screen bg-background text-foreground antialiased">
     <div id="root"></div>
