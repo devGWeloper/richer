@@ -13,6 +13,12 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./richer.db"
 
+    # 공개 시장 데이터 조회용 기본 KIS API 설정 (선택적)
+    KIS_APP_KEY: str = ""
+    KIS_APP_SECRET: str = ""
+    KIS_ACCOUNT_NO: str = ""
+    KIS_MOCK: bool = True  # True면 모의투자
+
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7

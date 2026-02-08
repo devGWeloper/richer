@@ -169,3 +169,45 @@ export interface BuyableQuantity {
   max_buyable_quantity: number
   message: string | null
 }
+
+// 시장 지수 관련 타입
+export interface IndexData {
+  index_code: string
+  index_name: string
+  current_value: number
+  change: number
+  change_rate: number
+  volume: number
+  trade_value: number
+  high: number
+  low: number
+  open_value: number
+}
+
+export interface IndexChartItem {
+  time: string
+  value: number
+}
+
+export interface IndexResponse {
+  index: IndexData
+  chart: IndexChartItem[]
+}
+
+// 인기 종목 관련 타입
+export interface PopularStockItem {
+  rank: number
+  stock_code: string
+  stock_name: string
+  current_price: number
+  change: number
+  change_rate: number
+  volume: number
+  trade_value: number
+  market: string
+}
+
+export interface PopularStocksResponse {
+  category: string
+  stocks: PopularStockItem[]
+}

@@ -5,6 +5,8 @@ import { useWebSocket } from '@/hooks/useWebSocket'
 import { formatNumber, formatPercent } from '@/lib/utils'
 import { TRADE_SIDE, ORDER_STATUS } from '@/lib/constants'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import MarketOverview from '@/components/dashboard/MarketOverview'
+import PopularStocks from '@/components/dashboard/PopularStocks'
 
 export default function DashboardPage() {
   useWebSocket()
@@ -51,6 +53,12 @@ export default function DashboardPage() {
           bg="bg-orange-50"
         />
       </div>
+
+      {/* Market Overview Section - KOSPI/KOSDAQ */}
+      <MarketOverview />
+
+      {/* Popular Stocks Section */}
+      <PopularStocks />
 
       {/* Holdings Section */}
       <div className="rounded-2xl border bg-white md:rounded-lg">
